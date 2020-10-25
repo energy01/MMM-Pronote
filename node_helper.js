@@ -14,6 +14,7 @@ module.exports = NodeHelper.create({
     this.data = {}
     this.student = 0
     this.account = {}
+    this.init = false
   },
 
   initialize: function(config) {
@@ -71,8 +72,11 @@ module.exports = NodeHelper.create({
     if (this.account.account === "parent" && (!this.account.studentNumber || isNaN(this.account.studentNumber))) return this.sendSocketNotification('ERROR', "Compte " + this.config.Account + ": studentNumber ne peux pas être égale 0 !")
     if (!this.account.cas) this.account.cas = "none"
     await this.pronote()
-    this.sendSocketNotification("INITIALIZED")
-    console.log("[PRONOTE] Pronote is initialized.")
+    if (!this.init) {
+      this.sendSocketNotification("INITIALIZED")
+      console.log("[PRONOTE] Pronote is initialized.")
+      this.init = true
+    }
   },
 
   pronote: async function() {
@@ -190,7 +194,7 @@ module.exports = NodeHelper.create({
     }
 
     /** Display Holidays **/
-    if (this.config.Holidays.display) { // Holidays ! maybe needed for other check
+    if (this.config.Holidays.display) {
       this.data["holidays"] = this.session.params.publicHolidays
       this.data.holidays = this.data.holidays.filter(Holidays => fromNow < Holidays.to)
 
@@ -239,6 +243,9 @@ module.exports = NodeHelper.create({
 
     if (this.config.Averages.display || this.config.Marks.display) { // notes de l'eleve
       let toMarksSearch = new Date(fromNow.getFullYear(),fromNow.getMonth(),fromNow.getDate() - this.config.Marks.searchDays,0,0,0)
+      if (this.data.isHolidays.active) { // holidays -> lock start from the first day of holiday
+        toMarksSearch = new Date(toIsHolidays.getFullYear(),fromIsHolidays.getMonth(),fromIsHolidays.getDate() - this.config.Marks.searchDays,0,0,0)
+      }
       var marks = null
       if (this.account.account == "student") this.data["marks"] = await this.session.marks(from, toMarksSearch)
       else this.data["marks"] = await this.session.marks(this.session.user.students[this.student], null, this.config.PeriodType)
@@ -357,8 +364,16 @@ module.exports = NodeHelper.create({
     }
     clearInterval(this.interval)
     this.interval = setInterval(async () => {
-      await this.pronote()
-      log("Pronote data updated.")
+      if (this.config.rotateAccount && this.config.Accounts.length > 1) {
+        if (this.config.Account+1 > this.config.Accounts.length) this.config.Account = 1
+        else this.config.Account += 1
+        log("Pronote set account to", this.config.Account)
+        this.getAccount()
+      }
+      else {
+        await this.pronote()
+        log("Pronote data updated.")
+      }
     }, nextLoad)
   },
 
@@ -369,6 +384,7 @@ module.exports = NodeHelper.create({
     clearInterval(this.interval)
     this.sendSocketNotification("ACCOUNT_CHANGE")
     this.config.Account = accountNumber
+    this.init = false
     this.getAccount()
   },
 
