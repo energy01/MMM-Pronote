@@ -45,11 +45,11 @@
   font-size: xx-large;
 }
 
-#PRONOTE_DISPLAY_TIMETABLE {
+.PRONOTE_DISPLAY_TIMETABLE {
   display:flex;
 }
 
-#PRONOTE_DETAIL {
+.PRONOTE_DETAIL {
   line-height: 1em;
   padding-right: 1em;
   font-size: medium;
@@ -66,6 +66,8 @@
   display: flex;
 }
 
+#PRONOTE_ABSENCES,
+#PRONOTE_DELAYS,
 #PRONOTE_MARKS,
 #PRONOTE_HOLIDAYS,
 #PRONOTE_HOMEWORKS,
@@ -79,12 +81,12 @@
 
 #PRONOTE_TIMETABLE_DAY,
 #PRONOTE_TIMETABLE_NEXT {
- padding-bottom: 10px;
+  padding-bottom: 10px;
 }
 
-#PRONOTE_AV_STUDENT,
-#PRONOTE_VALUES,
-#PRONOTE_HOURS {
+.PRONOTE_AV_STUDENT,
+.PRONOTE_VALUES,
+.PRONOTE_HOURS {
   margin-right: 10px;
 }
 
@@ -92,26 +94,59 @@
   padding-bottom: 10px;
 }
 
-#PRONOTE_TEXT_UNDERLINE {
+.PRONOTE_TEXT_UNDERLINE {
   padding-bottom: 12px;
   text-decoration: underline;
 }
 
-#PRONOTE_SUBJECT_VALUE {
-  padding-bottom: 5px;
+.PRONOTE_SUBJECT {
+  border-bottom: dotted 2px #222;
 }
 
-#PRONOTE_TEACHER,
-#PRONOTE_ROOM,
-#PRONOTE_CANCEL {
+.PRONOTE_SUBJECT_VALUE {
+  padding: 5px 0;
+}
+
+.PRONOTE_TEACHER,
+.PRONOTE_ROOM,
+.PRONOTE_CANCEL {
   margin-right: 5px
 }
 
-#PRONOTE_VALUES_DESCRIPTION {
+.PRONOTE_VALUES_DESCRIPTION {
   width: 250px;
 }
 
-#PRONOTE_HOMEWORKS_VALUES {
+.PRONOTE_HOMEWORKS_DATE {
+  text-align: left;
+  margin: 15px 0;
+}
+
+.PRONOTE_HOMEWORKS_DATE span {
+  border-top-right-radius: 1em;
+  border-bottom-right-radius: 1em;
+  background: rgb(0,0,0);
+  background: linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(170,170,170,0.8) 20%);
+  color: black;
+  padding: 5px 10px 5px 25px;
+}
+
+.PRONOTE_DELAYS_DONE,
+.PRONOTE_ABSENCES_DONE,
+.PRONOTE_HOMEWORKS_DONE {
+  width:30px;
+  text-align: center;
+  color: green;
+}
+
+.PRONOTE_DELAYS_NOTDONE,
+.PRONOTE_ABSENCES_NOTDONE {
+  width:30px;
+  text-align: center;
+  color: red;
+}
+
+.PRONOTE_HOMEWORKS_VALUES {
   width: 100px;
   margin-right: 10px;
   overflow: hidden;
@@ -123,4 +158,8 @@
   padding-bottom: 10px;
   font-size: large;
 }
-.annuler {text-decoration:line-through;}
+.cancelled {text-decoration:line-through;}
+
+.highlight {
+  color: white;
+}
