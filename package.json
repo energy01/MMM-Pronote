@@ -5,7 +5,7 @@
   "main": "MMM-Pronote.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/delphiki/MMM-Pronote.git"
+    "url": "git+https://github.com/bugsounet/MMM-Pronote.git"
   },
   "scripts": {
     "update": "installer/update.sh"
@@ -20,9 +20,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/delphiki/MMM-Pronote/issues"
+    "url": "https://github.com/bugsounet/MMM-Pronote/issues"
   },
-  "homepage": "https://github.com/delphiki/MMM-Pronote#readme",
+  "homepage": "https://github.com/bugsounet/MMM-Pronote#readme",
   "dependencies": {
     "@bugsounet/npmcheck": "^0.9.9",
     "@bugsounet/pronote-api": "^1.0.0",
