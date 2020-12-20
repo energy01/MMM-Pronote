@@ -195,6 +195,7 @@ Module.register("MMM-Pronote", {
         let text = null
         switch (payload.type) {
           case "absences":
+            if (payload.data.length == 0) return
             text = payload.name + " -- Absences:\n\n"
             payload.data.forEach(absence => {
               if (absence.oneDay) text += "Le " + absence.day + " de " + absence.fromHour + " à " + absence.toHour + ": "
@@ -212,6 +213,7 @@ Module.register("MMM-Pronote", {
             this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
             break
           case "notes":
+            if (payload.data.length == 0) return
             text = payload.name + " -- Dernières notes:\n\n"
             payload.data.forEach(subject => {
               text += subject.name + " (Moyenne: " + subject.averages.student + ")\n"
@@ -223,6 +225,7 @@ Module.register("MMM-Pronote", {
             this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
             break
           case "devoirs":
+            if (payload.data.length == 0) return
             text = payload.name + " -- Devoirs:\n\n"
             let homeworkDate = null
             payload.data.forEach(homework => {
