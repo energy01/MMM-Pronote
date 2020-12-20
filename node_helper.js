@@ -3,6 +3,7 @@ const npmCheck = require("@bugsounet/npmcheck");
 const wget = require('wget-improved');
 const fs = require('fs');
 const NodeHelper = require("node_helper");
+const _ = require('lodash');
 
 let log = (...args) => { /* do nothing */ }
 
@@ -14,6 +15,7 @@ module.exports = NodeHelper.create({
     this.student = 0
     this.account = {}
     this.cache = []
+    this.cacheOld = []
     this.accountNumber = 1
     this.currentDisplay = 1
     this.intervalUpdate = null
@@ -356,6 +358,7 @@ module.exports = NodeHelper.create({
     }
 
     await this.makeCache(data)
+    await this.compareCache(data)
   },
 
   localizedDate: function(array, options= {}) {
@@ -450,6 +453,84 @@ module.exports = NodeHelper.create({
     })
   },
 
+  compareCache: function(data) {
+    return new Promise(resolve => {
+      if (!this.cacheOld[this.accountNumber]) {
+        log("Create Old Cache")
+        this.cacheOld[this.accountNumber] = this.cache[this.accountNumber]
+        resolve()
+      }
+      else {
+        let newData = {
+          name: this.cacheOld[this.accountNumber].name,
+          type: null,
+          data: null
+        }
+
+        /** absences **/
+        if (this.config.Notifications.absences) {
+          if (_.isEqual(this.cache[this.accountNumber].absences, this.cacheOld[this.accountNumber].absences)) log("absences: ok")
+          else {
+            log("absences: changements...")
+            newData.type= "absences"
+            newData.data= _.difference(this.cache[this.accountNumber].absences, this.cacheOld[this.accountNumber].absences)
+            this.sendNoti(newData)
+          }
+        }
+
+        /** delays **/
+        if (this.config.Notifications.delays) {
+          if (_.isEqual(this.cache[this.accountNumber].delays, this.cacheOld[this.accountNumber].delays)) log("retards: ok")
+          else {
+            log("retards: changements...")
+            newData.type= "retards"
+            newData.data= _.difference(this.cache[this.accountNumber].delays, this.cacheOld[this.accountNumber].delays)
+            this.sendNoti(newData)
+          }
+        }
+
+        /** moyennne **/
+        if (this.config.Notifications.average) {
+          if (_.isEqual(this.cache[this.accountNumber].marks.averages, this.cacheOld[this.accountNumber].marks.averages)) log("moyenne: ok")
+          else {
+            log("moyenne: changements...")
+            newData.type= "moyenne"
+            newData.data = _.difference(this.cache[this.accountNumber].marks.averages, this.cacheOld[this.accountNumber].marks.averages)
+            this.sendNoti(newData)
+          }
+        }
+
+        /** marks **/
+        if (this.config.Notifications.marks) {
+          if (_.isEqual(this.cache[this.accountNumber].marks.subjects, this.cacheOld[this.accountNumber].marks.subjects)) log("notes: ok")
+          else {
+            log("notes: changements...")
+            newData.type= "notes"
+            newData.data = _.difference(this.cache[this.accountNumber].marks.subjects, this.cacheOld[this.accountNumber].marks.subjects)
+            this.sendNoti(newData)
+          }
+        }
+
+        /** devoirs @maybe todo better **/
+        if (this.config.Notifications.homeworks) {
+          for (let nb = 0; nb < this.cache[this.accountNumber].homeworks.length; nb++) {
+            if (this.cache[this.accountNumber].homeworks[nb].description != this.cacheOld[this.accountNumber].homeworks[nb].description) {
+              log("devoirs: changements...")
+              newData.type= "devoirs"
+              newData.data = _.difference(this.cache[this.accountNumber].homeworks, this.cacheOld[this.accountNumber].homeworks)
+              this.sendNoti(newData)
+              break
+            }
+            else log("devoirs: ok")
+          }
+        }
+
+        this.cacheOld[this.accountNumber] = this.cache[this.accountNumber]
+        resolve()
+      }
+    })
+  },
+
   /** applique l'avatar telecharger depuis le cache **/
   setAvatar: async function (account,path) {
     this.cache[account].avatar = path
@@ -464,6 +545,11 @@ module.exports = NodeHelper.create({
   sendUpdated: function(data) {
     log("Display cache:", this.currentDisplay)
     this.sendSocketNotification("PRONOTE_UPDATED", data)
+  },
+
+  sendNoti: function(data) {
+    log("Notification:", data)
+    this.sendSocketNotification("PRONOTE_NOTI", data)
   },
 
   /** swith account...**/

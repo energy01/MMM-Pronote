@@ -72,6 +72,13 @@ Module.register("MMM-Pronote", {
       number: 3
     },
     ReplaceSubjects: [],
+    Notifications: {
+      absences: true,
+      delays: true,
+      average: true,
+      marks: true,
+      homeworks: true
+    },
     NPMCheck: {
       useChecker: true,
       delay: "45m",
@@ -184,6 +191,51 @@ Module.register("MMM-Pronote", {
           this.sendNotification("NPM_UPDATE", payload)
         }
         break
+      case "PRONOTE_NOTI":
+        let text = null
+        switch (payload.type) {
+          case "absences":
+            text = payload.name + " -- Absences:\n\n"
+            payload.data.forEach(absence => {
+              if (absence.oneDay) text += "Le " + absence.day + " de " + absence.fromHour + " à " + absence.toHour + ": "
+              else text += "Du " + absence.localizedFrom + " au " + absence.localizedTo + ": "
+              if (absence.justified) text += absence.reason + "\n"
+              else text +=  "Absence non justifiée\n"
+            })
+            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            break
+          case "retards":
+            /** @todo **/
+            break
+          case "moyenne":
+            text = payload.name + " -- Moyenne\n\nGénérale: " + payload.data.student + "\nClasse: " + payload.data.studentClass
+            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            break
+          case "notes":
+            text = payload.name + " -- Dernières notes:\n\n"
+            payload.data.forEach(subject => {
+              text += subject.name + " (Moyenne: " + subject.averages.student + ")\n"
+              subject.marks.forEach(mark => {
+                text += "Le " + mark.formattedDate + ": " + mark.title + " " + (mark.isAway ? "Absent" : mark.value + "/" + mark.scale + " Coeff:" + mark.coefficient) + "\n"
+              })
+              text += "\n"
+            })
+            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            break
+          case "devoirs":
+            text = payload.name + " -- Devoirs:\n\n"
+            let homeworkDate = null
+            payload.data.forEach(homework => {
+              if (homeworkDate !== homework.formattedFor) {
+                text += "Pour " + homework.formattedFor + ":\n"
+                homeworkDate = homework.formattedFor
+              }
+              if (homework.done) text += "✓ "
+              text += homework.subject + ": " + homework.description + "\n"
+            })
+            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            break
+        }
     }
   },
 
