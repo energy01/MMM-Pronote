@@ -209,14 +209,15 @@ Module.register("MMM-Pronote", {
             /** @todo **/
             break
           case "moyenne":
-            text = payload.name + " -- Moyenne\n\nGénérale: " + payload.data.student + "\nClasse: " + payload.data.studentClass
+            if (!payload.data.student || !payload.data.studentClass) return
+            text = payload.name + " -- Moyenne\n\nGénérale: " + payload.data.student.toFixed(2) + "\nClasse: " + payload.data.studentClass.toFixed(2)
             this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
             break
           case "notes":
             if (payload.data.length == 0) return
             text = payload.name + " -- Dernières notes:\n\n"
             payload.data.forEach(subject => {
-              text += subject.name + " (Moyenne: " + subject.averages.student + ")\n"
+              text += subject.name + " (Moyenne: " + subject.averages.student.toFixed(2) + ")\n"
               subject.marks.forEach(mark => {
                 text += "Le " + mark.formattedDate + ": " + mark.title + " " + (mark.isAway ? "Absent" : mark.value + "/" + mark.scale + " Coeff:" + mark.coefficient) + "\n"
               })
@@ -301,15 +302,16 @@ Module.register("MMM-Pronote", {
           else handler.reply("TEXT", args[1] + " n'est pas un numéro du compte valide")
           break
         case "moyenne":
-          if (!this.userData.marks && !this.userData.marks.averages) return handler.reply("TEXT", "Informations non disponible")
-          text = this.userData.name + " -- Moyenne\n\nGénérale: " + this.userData.marks.averages.student + "\nClasse: " + this.userData.marks.averages.studentClass
+          if (!this.userData.marks.averages) return handler.reply("TEXT", "Informations non disponible")
+          if (!this.userData.marks.averages.student || !this.userData.marks.averages.studentClass) return handler.reply("TEXT", "Informations non disponible")
+          text = this.userData.name + " -- Moyenne\n\nGénérale: " + this.userData.marks.averages.student.toFixed(2) + "\nClasse: " + this.userData.marks.averages.studentClass.toFixed(2)
           handler.reply("TEXT", text)
           break
         case "notes":
-          if (!this.userData.marks && !this.userData.marks.subjects.length) return handler.reply("TEXT", "Informations non disponible")
+          if (!this.userData.marks.subjects.length) return handler.reply("TEXT", "Informations non disponible")
           text = this.userData.name + " -- Dernières notes:\n\n"
           this.userData.marks.subjects.forEach(subject => {
-            text += subject.name + " (Moyenne: " + subject.averages.student + ")\n"
+            text += subject.name + " (Moyenne: " + subject.averages.student.toFixed(2) + ")\n"
             subject.marks.forEach(mark => {
               text += "Le " + mark.formattedDate + ": " + mark.title + " " + (mark.isAway ? "Absent" : mark.value + "/" + mark.scale + " Coeff:" + mark.coefficient) + "\n"
             })

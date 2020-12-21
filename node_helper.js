@@ -309,6 +309,8 @@ module.exports = NodeHelper.create({
         homework.formattedFor = this.formatDate(homework.for, true, {weekday: "long", year: "numeric", month: "long", day: "numeric"})
         /** wouahh ... description is too long ?? **/
         if (homework.description.length > this.config.Homeworks.lengthDescription) homework.description = homework.description.slice (0,this.config.Homeworks.lengthDescription-3) + "..."
+        /** delete files (not needed and in conflit with check OldCache) **/
+        homework.files = []
         /** replace subjects from config **/
         Array.from(this.config.ReplaceSubjects, (subject) => {
           if (subject[homework.subject]) homework.subject = subject[homework.subject]
@@ -469,9 +471,9 @@ module.exports = NodeHelper.create({
 
         /** absences **/
         if (this.config.Notifications.absences) {
-          if (_.isEqual(this.cache[this.accountNumber].absences, this.cacheOld[this.accountNumber].absences)) log("absences: ok")
+          if (_.isEqual(this.cache[this.accountNumber].absences, this.cacheOld[this.accountNumber].absences)) log("Check absences: ok")
           else {
-            log("absences: changements...")
+            log("Check absences: changements...")
             newData.type= "absences"
             newData.data= _.difference(this.cache[this.accountNumber].absences, this.cacheOld[this.accountNumber].absences)
             this.sendNoti(newData)
@@ -480,9 +482,9 @@ module.exports = NodeHelper.create({
 
         /** delays **/
         if (this.config.Notifications.delays) {
-          if (_.isEqual(this.cache[this.accountNumber].delays, this.cacheOld[this.accountNumber].delays)) log("retards: ok")
+          if (_.isEqual(this.cache[this.accountNumber].delays, this.cacheOld[this.accountNumber].delays)) log("Check retards: ok")
           else {
-            log("retards: changements...")
+            log("Check retards: changements...")
             newData.type= "retards"
             newData.data= _.difference(this.cache[this.accountNumber].delays, this.cacheOld[this.accountNumber].delays)
             this.sendNoti(newData)
@@ -491,9 +493,9 @@ module.exports = NodeHelper.create({
 
         /** moyennne **/
         if (this.config.Notifications.average) {
-          if (_.isEqual(this.cache[this.accountNumber].marks.averages, this.cacheOld[this.accountNumber].marks.averages)) log("moyenne: ok")
+          if (_.isEqual(this.cache[this.accountNumber].marks.averages, this.cacheOld[this.accountNumber].marks.averages)) log("Check moyenne: ok")
           else {
-            log("moyenne: changements...")
+            log("Check moyenne: changements...")
             newData.type= "moyenne"
             newData.data = _.difference(this.cache[this.accountNumber].marks.averages, this.cacheOld[this.accountNumber].marks.averages)
             this.sendNoti(newData)
@@ -502,26 +504,23 @@ module.exports = NodeHelper.create({
 
         /** marks **/
         if (this.config.Notifications.marks) {
-          if (_.isEqual(this.cache[this.accountNumber].marks.subjects, this.cacheOld[this.accountNumber].marks.subjects)) log("notes: ok")
+          if (_.isEqual(this.cache[this.accountNumber].marks.subjects, this.cacheOld[this.accountNumber].marks.subjects)) log("Check notes: ok")
           else {
-            log("notes: changements...")
+            log("Check notes: changements...")
             newData.type= "notes"
             newData.data = _.difference(this.cache[this.accountNumber].marks.subjects, this.cacheOld[this.accountNumber].marks.subjects)
             this.sendNoti(newData)
           }
         }
 
-        /** devoirs @maybe todo better **/
+        /** devoirs **/
         if (this.config.Notifications.homeworks) {
-          for (let nb = 0; nb < this.cache[this.accountNumber].homeworks.length; nb++) {
-            if (this.cache[this.accountNumber].homeworks[nb].description != this.cacheOld[this.accountNumber].homeworks[nb].description) {
-              log("devoirs: changements...")
-              newData.type= "devoirs"
-              newData.data = _.difference(this.cache[this.accountNumber].homeworks, this.cacheOld[this.accountNumber].homeworks)
-              this.sendNoti(newData)
-              break
-            }
-            else log("devoirs: ok")
+          if (_.isEqual(this.cache[this.accountNumber].homeworks, this.cacheOld[this.accountNumber].homeworks)) log("Check devoirs: ok")
+          else {
+            log("Check devoirs: changements...")
+            newData.type= "devoirs"
+            newData.data = _.difference(this.cache[this.accountNumber].homeworks, this.cacheOld[this.accountNumber].homeworks)
+            this.sendNoti(newData)
           }
         }
 
