@@ -7,7 +7,6 @@
  */
 
 Module.register("MMM-Pronote", {
-
   requiresVersion: "2.13.0",
   defaults: {
     debug: false, // set it to false if you want no debug in console
@@ -73,6 +72,13 @@ Module.register("MMM-Pronote", {
       number: 3
     },
     ReplaceSubjects: [],
+    Notifications: {
+      absences: true,
+      delays: true,
+      average: true,
+      marks: true,
+      homeworks: true
+    },
     NPMCheck: {
       useChecker: true,
       delay: "45m",
@@ -81,7 +87,6 @@ Module.register("MMM-Pronote", {
   },
 
   start: function() {
-   this.config = configMerge({}, this.defaults, this.config)
    this.userData = {}
    this.init = false
    this.error = null
@@ -186,6 +191,55 @@ Module.register("MMM-Pronote", {
           this.sendNotification("NPM_UPDATE", payload)
         }
         break
+      case "PRONOTE_NOTI":
+        let text = null
+        switch (payload.type) {
+          case "absences":
+            if (payload.data.length == 0) return
+            text = payload.name + " -- Absences:\n\n"
+            payload.data.forEach(absence => {
+              if (absence.oneDay) text += "Le " + absence.day + " de " + absence.fromHour + " à " + absence.toHour + ": "
+              else text += "Du " + absence.localizedFrom + " au " + absence.localizedTo + ": "
+              if (absence.justified) text += absence.reason + "\n"
+              else text +=  "Absence non justifiée\n"
+            })
+            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            break
+          case "retards":
+            /** @todo **/
+            break
+          case "moyenne":
+            if (!payload.data.student || !payload.data.studentClass) return
+            text = payload.name + " -- Moyenne\n\nGénérale: " + payload.data.student.toFixed(2) + "\nClasse: " + payload.data.studentClass.toFixed(2)
+            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            break
+          case "notes":
+            if (payload.data.length == 0) return
+            text = payload.name + " -- Dernières notes:\n\n"
+            payload.data.forEach(subject => {
+              text += subject.name + " (Moyenne: " + subject.averages.student.toFixed(2) + ")\n"
+              subject.marks.forEach(mark => {
+                text += "Le " + mark.formattedDate + ": " + mark.title + " " + (mark.isAway ? "Absent" : mark.value + "/" + mark.scale + " Coeff:" + mark.coefficient) + "\n"
+              })
+              text += "\n"
+            })
+            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            break
+          case "devoirs":
+            if (payload.data.length == 0) return
+            text = payload.name + " -- Devoirs:\n\n"
+            let homeworkDate = null
+            payload.data.forEach(homework => {
+              if (homeworkDate !== homework.formattedFor) {
+                text += "Pour " + homework.formattedFor + ":\n"
+                homeworkDate = homework.formattedFor
+              }
+              if (homework.done) text += "✓ "
+              text += homework.subject + ": " + homework.description + "\n"
+            })
+            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            break
+        }
     }
   },
 
@@ -233,15 +287,68 @@ Module.register("MMM-Pronote", {
   },
 
   pronote: function(command,handler) {
+    if (!this.userData) return handler.reply("TEXT", "Pronote n'est pas initialisé")
     if (handler.args) {
       var args = handler.args.split(" ")
-      if (!isNaN(args[0])) {
-          if (args[0] == 0 || (args[0] > this.config.Accounts.length)) return handler.reply("TEXT", "Compte non trouvé: " + args[0])
-          handler.reply("TEXT", "Je change le compte pronote vers le numéro " + args[0])
-          this.sendSocketNotification("SET_ACCOUNT", args[0])
+      let text = null
+      switch (args[0]) {
+        case "compte":
+          if (!args[1]) return handler.reply("TEXT", "Syntaxe:\n/pronote compte <numéro>")
+          if (!isNaN(args[1])) {
+            if (args[1] == 0 || (args[1] > this.config.Accounts.length)) return handler.reply("TEXT", "Compte non trouvé: " + args[1])
+            handler.reply("TEXT", "Je change le compte pronote vers le numéro " + args[1])
+            this.sendSocketNotification("SET_ACCOUNT", args[1])
+          }
+          else handler.reply("TEXT", args[1] + " n'est pas un numéro du compte valide")
+          break
+        case "moyenne":
+          if (!this.userData.marks.averages) return handler.reply("TEXT", "Informations non disponible")
+          if (!this.userData.marks.averages.student || !this.userData.marks.averages.studentClass) return handler.reply("TEXT", "Informations non disponible")
+          text = this.userData.name + " -- Moyenne\n\nGénérale: " + this.userData.marks.averages.student.toFixed(2) + "\nClasse: " + this.userData.marks.averages.studentClass.toFixed(2)
+          handler.reply("TEXT", text)
+          break
+        case "notes":
+          if (!this.userData.marks.subjects.length) return handler.reply("TEXT", "Informations non disponible")
+          text = this.userData.name + " -- Dernières notes:\n\n"
+          this.userData.marks.subjects.forEach(subject => {
+            text += subject.name + " (Moyenne: " + subject.averages.student.toFixed(2) + ")\n"
+            subject.marks.forEach(mark => {
+              text += "Le " + mark.formattedDate + ": " + mark.title + " " + (mark.isAway ? "Absent" : mark.value + "/" + mark.scale + " Coeff:" + mark.coefficient) + "\n"
+            })
+            text += "\n"
+          })
+          handler.reply("TEXT", text)
+          break
+        case "absences":
+          text = this.userData.name + " -- Absences:\n\n"
+          if (!this.userData.absences.length) return handler.reply("TEXT", "Aucune absences")
+          this.userData.absences.forEach(absence => {
+            if (absence.oneDay) text += "Le " + absence.day + " de " + absence.fromHour + " à " + absence.toHour + ": "
+            else text += "Du " + absence.localizedFrom + " au " + absence.localizedTo + ": "
+            if (absence.justified) text += absence.reason + "\n"
+            else text +=  "Absence non justifiée\n"
+          })
+          handler.reply("TEXT", text)
+          break
+        case "devoirs":
+          text = this.userData.name + " -- Devoirs:\n\n"
+          if (!this.userData.homeworks.length) return handler.reply("TEXT", "Pas de devoirs")
+          let homeworkDate = null
+          this.userData.homeworks.forEach(homework => {
+            if (homeworkDate !== homework.formattedFor) {
+              text += "Pour " + homework.formattedFor + ":\n"
+              homeworkDate = homework.formattedFor
+            }
+            if (homework.done) text += "✓ "
+            text += homework.subject + ": " + homework.description + "\n"
+          })
+          handler.reply("TEXT", text)
+          break
+        default:
+          handler.reply("TEXT", "Commande inconnue")
+          break
       }
-      else handler.reply("TEXT", args[0] + " n'est pas un numéro du compte valide")
     }
-    else handler.reply("TEXT", "Merci de spécifier le numéro du compte")
+    else handler.reply("TEXT", "Commandes disponible:\n\ncompte: changer de compte\nmoyenne: affiche la moyenne\nnotes: affiche les dernière notes\nabsences: affiche les absences\ndevoirs: affiche les devoirs")
   }
 });
