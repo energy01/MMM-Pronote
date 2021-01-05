@@ -1,6 +1,6 @@
 {
   "name": "MMM-Pronote",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Display Pronote on MagicMirror",
   "main": "MMM-Pronote.js",
   "repository": {

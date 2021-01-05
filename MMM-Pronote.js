@@ -209,8 +209,8 @@ Module.register("MMM-Pronote", {
             /** @todo **/
             break
           case "moyenne":
-            if (!payload.data.student || !payload.data.studentClass) return
-            text = payload.name + " -- Moyenne\n\nGénérale: " + payload.data.student.toFixed(2) + "\nClasse: " + payload.data.studentClass.toFixed(2)
+            if (!Object.keys(payload.data.averages).length) return
+            text = payload.name + " -- Moyenne\n\nGénérale: " + payload.data.averages.student.toFixed(2) + "\nClasse: " + payload.data.averages.studentClass.toFixed(2)
             this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
             break
           case "notes":
