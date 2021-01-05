@@ -497,7 +497,21 @@ module.exports = NodeHelper.create({
           else {
             log("Check moyenne: changements...")
             newData.type= "moyenne"
-            newData.data = _.difference(this.cache[this.accountNumber].marks.averages, this.cacheOld[this.accountNumber].marks.averages)
+            /** Cool Another MM bug !
+             ** NOT MERGE IN DEEP OBJECT/OBJECT on SocketNoti !!!
+             * (Since v2.14.0... but works in v2.13.0)
+             * data: {
+             *   name: String,
+             *   type: String,
+             *   data: {
+             *     value: String,
+             *     value2: String
+             *   }
+             * }
+             * What Are you doing really @MichMich !?
+            // newData.data = this.cache[this.accountNumber].marks.averages
+            **/
+            newData.data = this.cache[this.accountNumber].marks
             this.sendNoti(newData)
           }
         }
