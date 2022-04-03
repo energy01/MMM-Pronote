@@ -7,7 +7,7 @@
  */
 
 Module.register("MMM-Pronote", {
-  requiresVersion: "2.13.0",
+  requiresVersion: "2.17.0",
   defaults: {
     debug: false, // set it to false if you want no debug in console
     defaultAccount: 1,
@@ -78,11 +78,6 @@ Module.register("MMM-Pronote", {
       average: true,
       marks: true,
       homeworks: true
-    },
-    NPMCheck: {
-      useChecker: true,
-      delay: "45m",
-      useAlert: true
     }
   },
 
@@ -175,21 +170,6 @@ Module.register("MMM-Pronote", {
         this.userData = {}
         this.error = payload
         this.updateDom()
-        break
-      case "NPM_UPDATE":
-        if (payload && payload.length > 0) {
-          if (this.config.NPMCheck.useAlert) {
-            payload.forEach(npm => {
-              this.sendNotification("SHOW_ALERT", {
-                type: "notification" ,
-                message: "[NPM] " + npm.library + " v" + npm.installed +" -> v" + npm.latest,
-                title: this.translate("UPDATE_NOTIFICATION_MODULE", { MODULE_NAME: npm.module }),
-                timer: this.getUpdateIntervalMillisecondFromString(this.config.NPMCheck.delay) - 2000
-              })
-            })
-          }
-          this.sendNotification("NPM_UPDATE", payload)
-        }
         break
       case "PRONOTE_NOTI":
         let text = null

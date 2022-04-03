@@ -1,5 +1,4 @@
 const pronote = require('@bugsounet/pronote-api');
-const npmCheck = require("@bugsounet/npmcheck");
 const wget = require('wget-improved');
 const fs = require('fs');
 const NodeHelper = require("node_helper");
@@ -29,16 +28,6 @@ module.exports = NodeHelper.create({
     if (this.config.debug) log = (...args) => { console.log("[PRONOTE]", ...args) }
     this.updateIntervalMilliseconds = this.getUpdateIntervalMillisecondFromString(this.config.updateInterval)
     this.displayIntervalMilliseconds = this.getUpdateIntervalMillisecondFromString(this.config.rotateInterval)
-    /** check if update of npm Library needed **/
-    if (this.config.NPMCheck.useChecker) {
-      var cfg = {
-        dirName: __dirname,
-        moduleName: this.name,
-        timer: this.getUpdateIntervalMillisecondFromString(this.config.NPMCheck.delay),
-        debug: this.config.debug
-      }
-      this.Checker= new npmCheck(cfg, update => { this.sendSocketNotification("NPM_UPDATE", update)} )
-    }
     console.log("[PRONOTE] Number of CAS available:", pronote.casList.length)
     log("CAS List:", pronote.casList)
     if (this.config.defaultAccount > 0) this.getAccount()
