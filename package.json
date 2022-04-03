@@ -1,11 +1,11 @@
 {
   "name": "MMM-Pronote",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Display Pronote on MagicMirror",
   "main": "MMM-Pronote.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bugsounet/MMM-Pronote.git"
+    "url": "git+https://github.com/bugsounet/MMM-Pronote"
   },
   "scripts": {
     "update": "installer/update.sh"
@@ -20,11 +20,10 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/bugsounet/MMM-Pronote/issues"
+    "url": "https://forum.bugsounet.fr"
   },
-  "homepage": "https://github.com/bugsounet/MMM-Pronote#readme",
+  "homepage": "https://forum.bugsounet.fr",
   "dependencies": {
-    "@bugsounet/npmcheck": "^0.9.9",
     "@bugsounet/pronote-api": "^1.0.0",
     "wget-improved": "^3.2.1"
   }
