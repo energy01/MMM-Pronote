@@ -274,17 +274,21 @@ module.exports = NodeHelper.create({
       if (this.account.account == "student") data["marks"] = await this.session[this.accountNumber].marks(from, toMarksSearch)
       else data["marks"] = await this.session[this.accountNumber].marks(this.session[this.accountNumber].user.students[this.student], null, this.config.PeriodType)
 
-      data.marks.subjects.filter(subject => {
-        subject.marks = subject.marks.filter(mark => (mark.formattedDate = this.formatDate(mark.date, true)) && mark.date >= toMarksSearch)
-      })
-
-      data.marks.subjects = data.marks.subjects.filter(subject => subject.marks.length > 0)
-      /** replace subjects from config **/
-      Array.from(data.marks.subjects, (subject) => {
-        Array.from(this.config.ReplaceSubjects, (replace) => {
-          if (replace[subject.name]) subject.name = replace[subject.name]
+      if (data.marks) {
+        data.marks.subjects.filter(subject => {
+          subject.marks = subject.marks.filter(mark => (mark.formattedDate = this.formatDate(mark.date, true)) && mark.date >= toMarksSearch)
         })
-      })
+
+        data.marks.subjects = data.marks.subjects.filter(subject => subject.marks.length > 0)
+        /** replace subjects from config **/
+        Array.from(data.marks.subjects, (subject) => {
+          Array.from(this.config.ReplaceSubjects, (replace) => {
+            if (replace[subject.name]) subject.name = replace[subject.name]
+          })
+        })
+      } else {
+        data.marks = []
+      }
     }
 
     if (this.config.Homeworks.display) { // liste des devoirs à faire

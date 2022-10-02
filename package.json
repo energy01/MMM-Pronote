@@ -1,6 +1,6 @@
 {
   "name": "MMM-Pronote",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Display Pronote on MagicMirror",
   "main": "MMM-Pronote.js",
   "repository": {
@@ -24,7 +24,7 @@
   },
   "homepage": "https://forum.bugsounet.fr",
   "dependencies": {
-    "@bugsounet/pronote-api": "^1.0.0",
+    "@bugsounet/pronote-api": "^1.0.16",
     "wget-improved": "^3.2.1"
   }
 }
