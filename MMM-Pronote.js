@@ -183,7 +183,7 @@ Module.register("MMM-Pronote", {
               if (absence.justified) text += absence.reason + "\n"
               else text +=  "Absence non justifiée\n"
             })
-            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            this.sendNotification("TELBOT_TELL_ADMIN", TelegramBotExtraChars(text), {parse_mode:'Markdown'})
             break
           case "retards":
             /** @todo **/
@@ -191,7 +191,7 @@ Module.register("MMM-Pronote", {
           case "moyenne":
             if (!Object.keys(payload.data.averages).length) return
             text = payload.name + " -- Moyenne\n\nGénérale: " + payload.data.averages.student.toFixed(2) + "\nClasse: " + payload.data.averages.studentClass.toFixed(2)
-            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            this.sendNotification("TELBOT_TELL_ADMIN", TelegramBotExtraChars(text), {parse_mode:'Markdown'})
             break
           case "notes":
             if (payload.data.length == 0) return
@@ -203,7 +203,7 @@ Module.register("MMM-Pronote", {
               })
               text += "\n"
             })
-            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            this.sendNotification("TELBOT_TELL_ADMIN", TelegramBotExtraChars(text), {parse_mode:'Markdown'})
             break
           case "devoirs":
             if (payload.data.length == 0) return
@@ -217,7 +217,7 @@ Module.register("MMM-Pronote", {
               if (homework.done) text += "✓ "
               text += homework.subject + ": " + homework.description + "\n"
             })
-            this.sendNotification("TELBOT_TELL_ADMIN", text, {parse_mode:'Markdown'})
+            this.sendNotification("TELBOT_TELL_ADMIN", TelegramBotExtraChars(text), {parse_mode:'Markdown'})
             break
         }
     }
